@@ -1,8 +1,13 @@
+# Gogen.py
+# Author: Sam Barnett
+# Date Created: 29/07/2019
+
 import pygame
 from time import sleep
 import os
 pygame.init()
 
+## Initializing pygame Window
 showPos = False
 width, height = 780, 780
 os.environ['SDL_VIDEO_WINDOW_POS'] = "10,40"
@@ -12,6 +17,7 @@ pygame.display.set_caption("Gogen")
 alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y']
 around = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]]
 
+## Example Gogen
 layout = [["m", " ", "g", " ", "d"],
           [" ", " ", " ", " ", " "],
           ["w", " ", "l", " ", "y"],
@@ -22,6 +28,7 @@ words = ["acquire", "axle", "cut", "derv", "fir", "just", "keg", "man", "pile", 
 
 
 def getsides(word, char):
+    """Returns the characters either side of the argument char"""
     chrs = []
     for i, let in enumerate(word):
         if let == char:
@@ -32,17 +39,21 @@ def getsides(word, char):
     return chrs
 
 def getaround(array, cell):
+    """Returns the 8 cells objects around a given cell in the array"""
     return [array[dj+cell.j][di+cell.i] for di, dj in around if 0 <= cell.i + di <= 4 and 0 <= cell.j + dj <= 4]
 
-def text(n, pos, size):
+def text(c, pos, size):
+    """Renders a character at a given position on the screen"""
     font = pygame.font.SysFont("comicsansms", size)
-    surf = font.render(n, True, [16, 16, 16])
+    surf = font.render(c, True, [16, 16, 16])
     rect = surf.get_rect()
     rect.center = pos
     screen.blit(surf, rect)
 
 
 class Cell:
+    """Contains information about each cell in the gogen array"""
+    
     def __init__(self, s, i, j):
         self.i = i
         self.j = j
@@ -83,6 +94,7 @@ class Cell:
 
 
 def render(array):
+    """Renders the Gogen onto the pygame Screen"""
     screen.fill([255, 255, 255])
     for row in array:
         for c in row:
@@ -100,16 +112,14 @@ def render(array):
 arr = [[Cell(s, i, j) for i, s in enumerate(row)] for j, row in enumerate(layout)]
 
 replay = []
-while True:
-    # render(arr)
-    # sleep(0.15)
+while True:      ## Main Solver Loop, will continue until the gogen is solved
     con = True
     for row in arr:
         for c in row:
             for j in range(5):
                 for i in range(5):
                     if arr[j][i].f:
-                        if arr[j][i].s in c.pos:
+                        if arr[j][i].s in c.pos: ## Removes a character from pos(sibles) if it has already been put in array
                             c.pos.remove(arr[j][i].s)
                             con = False
 
@@ -138,7 +148,7 @@ while True:
                                 if p in c.pos:
                                     c.pos.remove(p)
 
-    data = {a: [] for a in alpha}  ### here
+    data = {a: [] for a in alpha}
     for row in arr:
         for c in row:
             if not c.f:
@@ -153,7 +163,7 @@ while True:
     if not con:
         continue
 
-    for p in alpha:   ##### remove s from pos if not able to connect to sides
+    for p in alpha:   ##### remove s from pos(sibles) if not able to connect to sides
         for w in words:
             sides = getsides(w, p)
             for char in sides:
@@ -179,6 +189,7 @@ while True:
     if not con:
         continue
 
+    ## For Rendering purposes, compiles a replay list of characters and the order they show up in
     for row in arr:
         for c in row:
             if len(c.pos) == 1:
